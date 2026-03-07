@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import apiClient from "./apiClient";
+import apiClient from "../../api/apiClient";
 
 export function useFetchOnDemand<T>(endpoint: string, deps: any[]) {
   const [data, setData] = useState<T[]>([]);

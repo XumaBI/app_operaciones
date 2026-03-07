@@ -150,28 +150,21 @@ export const MENU_DATA: Seccion[] = [
     ],
   },
 
-  /*
-  // 🔹 SECCIÓN INTEGRACIÓN
+  // 🔹 SECCIÓN INGESTA
   {
-    name: "Integración",
-    iconPath: "m11.99 18.54-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27z",
-    path: "/integracion",
+    name: "Ingesta de Datos",
+    iconPath: "M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z",
+    path: "/Ingesta",
     grupos: [
       {
         name: "Operaciones",
-        iconPath: "M6 6h12v12H6z",
-        path: "Modulo-Operaciones",
-        type: "componente",
+        iconPath: "M3 3h18v2H3zm0 4h18v2H3zm0 4h18v2H3zm0 4h12v2H3zm0 4h8v2H3z",
+        path: "ingesta-operaciones",
         informes: [
-          { name: "Ejecución", path: "ejecucion", type: "componente" },
-          { name: "Revisión", path: "revision", type: "componente" },
-          { name: "Condiciones", path: "condiciones", type: "componente" },
-          { name: "Activos", path: "activos", type: "componente" },
-          { name: "Tramitado", path: "tramitado", type: "componente" },
+          { name: "Cierres de Distribuidora", path: "Ejecucion", type: "componente" },
         ],
       },
     ],
   },
-  */
 ];
 

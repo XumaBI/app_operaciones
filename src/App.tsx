@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import { Sidebar } from "./assets/components/Sidebar/Sidebar";
-import Login from "./assets/components/Login";
-import Home from "./assets/components/Home";
-import Informe from "./assets/components/Informe";
-import { Header } from "./assets/components/Header";
-import { IntegracionPage } from "./assets/components/IntegracionPages";
+import { Sidebar } from "./shared/components/layout/Sidebar/Sidebar";
+import Login from "./shared/components/layout/Login";
+import Home from "./shared/components/layout/Home";
+import Informe from "./modules/informes/components/Informe";
+import { Header } from "./shared/components/layout/Header";
+import Ejecucion from "./modules/ingesta/components/Ejecucion";
 
 import { AuthContext } from "./context/AuthContext";
 import type { Usuario } from "./context/AuthContext";
 
-import "./assets/css/App.css";
+import "./styles/App.css";
 
 export function App() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -50,10 +50,10 @@ export function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/informe/:id" element={<Informe />} />
 
-                  {/* Componentes propios */}
+                  {/* Módulo de Ingesta */}
                   <Route
                     path="/componente/Ejecucion"
-                    element={<IntegracionPage />}
+                    element={<Ejecucion />}
                   />
                 </Routes>
               </div>
@@ -64,4 +64,3 @@ export function App() {
     </AuthContext.Provider>
   );
 }
-

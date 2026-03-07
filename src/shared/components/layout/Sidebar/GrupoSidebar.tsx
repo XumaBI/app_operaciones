@@ -14,7 +14,6 @@ export function GroupSidebar({
   informes,
   permisosInformes,
 }: GroupProps) {
-  // 🔒 Cerrado por defecto
   const [open, setOpen] = useState(false);
 
   const informesFiltrados = informes.filter((i) =>
@@ -23,7 +22,6 @@ export function GroupSidebar({
 
   return (
     <div className="group">
-      {/* --- Encabezado del grupo --- */}
       <div className="group-header" onClick={() => setOpen(!open)}>
         <div className="group-header-left">
           <svg viewBox="0 0 24 24" width="16" height="16">
@@ -31,13 +29,11 @@ export function GroupSidebar({
           </svg>
           <span>{title}</span>
         </div>
-        {/* 🔽 Flecha dinámica */}
         <span className={`arrow ${open ? "open" : ""}`}>
           <svg viewBox="0 0 24 24"><path d="M8.59 7.41 13.17 12 8.59 16.59 10 18l6-6-6-6z"></path></svg>
         </span>
       </div>
 
-      {/* --- Contenedor animado de los items --- */}
       <div
         className={`group-items ${open ? "open" : "closed"}`}
         style={{
@@ -53,4 +49,3 @@ export function GroupSidebar({
     </div>
   );
 }
-

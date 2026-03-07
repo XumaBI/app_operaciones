@@ -1,7 +1,7 @@
-import '../css/Home.css';
+import '../../../styles/Home.css';
 
 export default function Home() {
-  return (   
+  return (
 
     <div className="contenedor-bienvenida">
       <div className="Mensaje-bienvenida">

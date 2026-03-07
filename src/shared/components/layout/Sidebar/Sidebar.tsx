@@ -1,4 +1,4 @@
-import "../../css/sidebar.css";
+import "../../../../styles/sidebar.css";
 import { MENU_DATA } from "./menuData";
 import { SectionSidebar } from "./SectionSidebar";
 import { SidebarCollapsed } from "./SidebarCollapsed";

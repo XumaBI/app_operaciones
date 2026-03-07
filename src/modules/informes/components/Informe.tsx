@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import "../css/Login.css";
+import "../../../styles/Login.css";
 import { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { SinAcceso } from "./SinAcceso"; 
+import { AuthContext } from "../../../context/AuthContext";
+import { SinAcceso } from "./SinAcceso";
 
 
 
@@ -14,7 +14,7 @@ const informes: Record<string, string> = {
   "ejecucion-parcial": "https://app.powerbi.com/view?r=eyJrIjoiNWY3OWNjZDEtZDI4YS00OGQ2LWI2MmQtNjdmZmNmMjQyNDUwIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
   "controladas":  "https://app.powerbi.com/view?r=eyJrIjoiNjJmMTFkZjQtOTNlMC00NTgzLWE0MDktMTljYzIwYjliNDRlIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
   "relacionadas": "https://app.powerbi.com/view?r=eyJrIjoiOTVkYTVmODAtNDZmYy00NTZhLWFlYmMtZGU5NGZlNDg4NmVlIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
-   
+
   // Ejecucion Distribuidoras
   "caribe": "https://app.powerbi.com/view?r=eyJrIjoiZmI3ZmRhZGItNTIxNy00MWM4LTk5ZTYtNmQxMmE5NGQ0ZTg4IiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
   "guajira": "https://app.powerbi.com/view?r=eyJrIjoiZDlkYWFmMGMtNjEyOC00NjZlLThjZmMtYzk1N2NjODYxNzY2IiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
@@ -62,7 +62,6 @@ function Informe() {
   const { id } = useParams<{ id: string }>();
   const url = id ? informes[id] : null;
 
-  // 🔐 1. Usuario no logueado
   if (!usuario) {
     return (
       <h2 style={{ textAlign: "center", marginTop: "2rem" }}>
@@ -71,7 +70,6 @@ function Informe() {
     );
   }
 
-  // ❌ 2. Informe no existe
   if (!url) {
     return (
       <h2 style={{ textAlign: "center", marginTop: "2rem" }}>
@@ -80,7 +78,6 @@ function Informe() {
     );
   }
 
-  // 🚫 3. Usuario sin permiso
   if (!usuario.permisosInformes.includes(id!)) {
     return (
       <SinAcceso />
@@ -89,14 +86,6 @@ function Informe() {
 
   const contenedorRef = useRef<HTMLDivElement | null>(null);
   const [isFull, setIsFull] = useState(false);
-
-  if (!url) {
-    return (
-      <h2 style={{ textAlign: "center", marginTop: "2rem" }}>
-        Informe no encontrado
-      </h2>
-    );
-  }
 
   const toggleFullScreen = () => {
     const el = contenedorRef.current;
@@ -109,7 +98,6 @@ function Informe() {
     }
   };
 
-  // 🔁 sincroniza estado (ESC, botón, etc.)
   useEffect(() => {
     const onFullScreenChange = () => {
       setIsFull(!!document.fullscreenElement);

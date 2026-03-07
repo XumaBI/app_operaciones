@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import apiClient from "./apiClient";
+import apiClient from "../../api/apiClient";
 
 export function useFetchData<T>(endpoint: string) {
   const [data, setData] = useState<T[]>([]);

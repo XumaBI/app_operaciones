@@ -1,4 +1,4 @@
-import "../css/Header.css";
+import "../../../styles/Header.css";
 
 type HeadersProps = {
   userName: string;
@@ -9,7 +9,7 @@ type HeadersProps = {
 };
 
 export function Header({ nombre, onLogout, isClosed, onToggleSidebar }: HeadersProps) {
-  return (   
+  return (
     <div className="header-body">
       <div className="header-toolbar">
         <div className="header-contenedor">

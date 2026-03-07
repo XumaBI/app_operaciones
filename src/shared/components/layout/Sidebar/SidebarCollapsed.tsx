@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../css/sidebar.css";
+import "../../../../styles/sidebar.css";
 import { MENU_DATA, Seccion } from "./menuData";
 import { GroupSidebar } from "./GrupoSidebar";
 
@@ -51,13 +51,11 @@ export function SidebarCollapsed({
     const rect = e.currentTarget.getBoundingClientRect();
     const { clientX, clientY } = e;
 
-    // 🔹 Verificamos si el cursor está saliendo hacia la derecha (donde está el hover-box)
     const saliendoPorDerecha =
       clientX > rect.right && clientY >= rect.top && clientY <= rect.bottom;
 
-    if (saliendoPorDerecha) return; // no cerrar aún
+    if (saliendoPorDerecha) return;
 
-    // 🔹 Si no está entrando al hover-box, cerrar después de un breve delay
     const timeout = setTimeout(() => {
       if (!isHoverBoxActive) setHovered(null);
     }, 200);
@@ -84,7 +82,6 @@ export function SidebarCollapsed({
         ))}
       </div>
 
-      {/* 📦 Cuadro flotante que se mantiene activo al pasar el mouse */}
       {hovered && (
         <div
           className="hover-box" style={{position: "fixed", left: hovered.x, top: hovered.y,}}
@@ -112,8 +109,3 @@ export function SidebarCollapsed({
     </div>
   );
 }
-
-
-
-
-

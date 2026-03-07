@@ -23,7 +23,6 @@ export function SectionSidebar({
   permisosGrupo,
   permisosInformes,
 }: SectionProps) {
-  // 🔒 Cerrado por defecto
   const [open, setOpen] = useState(false);
 
   const gruposFiltrados = grupos.filter((g) =>
@@ -32,7 +31,6 @@ export function SectionSidebar({
 
   return (
     <div className="section">
-      {/* --- Encabezado de la sección --- */}
       <div className="sidebar-header" onClick={() => setOpen(!open)}>
         <div className="section-icono">
           <svg viewBox="0 0 24 24">
@@ -45,7 +43,6 @@ export function SectionSidebar({
         </div>
       </div>
 
-      {/* --- Contenido animado --- */}
       <div
         className={`section-groups ${open ? "open" : "closed"}`}
         style={{
@@ -67,5 +64,3 @@ export function SectionSidebar({
     </div>
   );
 }
-
-

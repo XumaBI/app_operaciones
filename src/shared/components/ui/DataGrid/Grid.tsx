@@ -27,9 +27,6 @@ export default function Grid({
   const [rows, setRows] = useState<any[]>(data || []);
   const [loading, setLoading] = useState(false);
 
-  //
-  // 1. Cargar datos desde API si apiUrl existe
-  //
   useEffect(() => {
     if (!apiUrl) return;
 
@@ -42,18 +39,12 @@ export default function Grid({
       .finally(() => setLoading(false));
   }, [apiUrl]);
 
-  //
-  // 2. Sincronizar datos cuando el padre envía nuevas filas
-  //
   useEffect(() => {
     if (Array.isArray(data)) {
       setRows(data);
     }
   }, [data]);
 
-  //
-  // 3. Actualizar celda editada y notificar al padre
-  //
   const handleCellEditCommit = (params: any) => {
     const { id, field, value } = params;
 
@@ -61,7 +52,6 @@ export default function Grid({
       const updatedRows = prevRows.map((row) => {
         if (row.id !== id) return row;
 
-        // convertir campos numéricos
         const parsedValue =
           field === "cantidad" || field === "prima" || field === "ebitda"
             ? value === "" || value === null
@@ -77,9 +67,6 @@ export default function Grid({
     });
   };
 
-  //
-  // 4. Props del DataGrid
-  //
   const dataGridProps = {
     rows,
     columns,
@@ -142,9 +129,6 @@ export default function Grid({
     },
   };
 
-  //
-  // 5. Render
-  //
   return (
     <ThemeProvider theme={darkTheme}>
       <GlobalStyles
@@ -199,5 +183,3 @@ export default function Grid({
     </ThemeProvider>
   );
 }
-
-

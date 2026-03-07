@@ -1,4 +1,4 @@
-import "../css/SinAcceso.css";
+import "../../../styles/SinAcceso.css";
 
 type SinAccesoProps = {
   titulo?: string;
@@ -22,7 +22,7 @@ export function SinAcceso({
         <p>{mensaje}</p>
 
         <span className="sin-acceso-foot">
-          Si considera que esto es un error, contacte a  
+          Si considera que esto es un error, contacte a
           <b> support-bi@xuma.la</b>
         </span>
       </div>

@@ -1,33 +1,32 @@
-import "../css/Login.css";
+import "../../../styles/Login.css";
 import { useState } from "react";
 
 const usuarios: Usuario[] = [
-  { 
+  {
     usuario: "admin",
     nombre: "Administrador",
     clave: "Xuma2025",
-    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx"],
-    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial", "canal-digital", "ejecucion-comercial-gaseras", "ejecucion-comercial-aseguradora", "pqrs"],  
+    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx", "Ingesta"],
+    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial", "canal-digital", "ejecucion-comercial-gaseras", "ejecucion-comercial-aseguradora", "pqrs", "ingesta-operaciones"],
     permisosInformes: [
       "ejecucion-promigas",
       "ejecucion-vanti",
-      "ejecucion-parcial", 
-      "controladas", 
-      "relacionadas", 
-      "caribe", 
-      "guajira", 
-      "efigas", 
-      "surtigas", 
-      "gdo", 
-      "ceo", 
-      "hdi", 
-      "alfa", 
+      "ejecucion-parcial",
+      "controladas",
+      "relacionadas",
+      "caribe",
+      "guajira",
+      "efigas",
+      "surtigas",
+      "gdo",
+      "ceo",
+      "hdi",
+      "alfa",
       "revision-ejecucion",
       "revision-cargue",
       "informe-cargues",
       "informe360",
-      "ejecucion",
-      "revision",
+      "Ejecucion",
       "digital-global",
       "digital-caribe",
       "digital-efigas",
@@ -46,15 +45,15 @@ const usuarios: Usuario[] = [
       "pqrs-promigas"
     ]
   },
-  { 
+  {
   usuario: "lmiranda",
   nombre: "Laura Miranda",
   clave: "102217",
   permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
   permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
-  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues"] 
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues"]
   },
-  { 
+  {
   usuario: "kmendez",
   nombre: "Karol Mendez",
   clave: "mendez2026",
@@ -75,31 +74,31 @@ const usuarios: Usuario[] = [
       "comercial-hdi",
       "comercial-alfa",
       "comercial-ike",
-    ] 
+    ]
   },
-  { 
+  {
     usuario: "aacebedo",
     nombre: "Andres Acebedo",
     clave: "xuma2025",
-    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx"],
-    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","comercial", "canal-digital", "ejecucion-comercial-gaseras", "ejecucion-comercial-aseguradora", "pqrs"],
+    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx", "Ingesta"],
+    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","comercial", "canal-digital", "ejecucion-comercial-gaseras", "ejecucion-comercial-aseguradora", "pqrs", "ingesta-operaciones"],
     permisosInformes: [
-      "ejecucion-promigas", 
-      "ejecucion-parcial", 
-      "controladas", 
-      "relacionadas", 
-      "caribe", 
-      "guajira", 
-      "efigas", 
-      "surtigas", 
-      "gdo", 
-      "ceo", 
-      "hdi", 
-      "alfa", 
+      "ejecucion-promigas",
+      "ejecucion-parcial",
+      "controladas",
+      "relacionadas",
+      "caribe",
+      "guajira",
+      "efigas",
+      "surtigas",
+      "gdo",
+      "ceo",
+      "hdi",
+      "alfa",
       "revision-ejecucion",
       "revision-cargue",
       "informe-cargues",
-      "ejecucion",
+      "Ejecucion",
       "digital-global",
       "digital-caribe",
       "digital-efigas",
@@ -115,31 +114,31 @@ const usuarios: Usuario[] = [
       "comercial-alfa",
       "comercial-ike",
       "pqrs-vanti",
-    ] 
+    ]
   },
-  { 
+  {
     usuario: "emolina",
     nombre: "Elena Molina",
     clave: "comercial2026",
-    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx"],
-    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","comercial"],
+    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx", "Ingesta"],
+    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","comercial", "ingesta-operaciones"],
     permisosInformes: [
-      "ejecucion-promigas", 
-      "ejecucion-parcial", 
-      "controladas", 
-      "relacionadas", 
-      "caribe", 
-      "guajira", 
-      "efigas", 
-      "surtigas", 
-      "gdo", 
-      "ceo", 
-      "hdi", 
-      "alfa", 
+      "ejecucion-promigas",
+      "ejecucion-parcial",
+      "controladas",
+      "relacionadas",
+      "caribe",
+      "guajira",
+      "efigas",
+      "surtigas",
+      "gdo",
+      "ceo",
+      "hdi",
+      "alfa",
       "revision-ejecucion",
       "revision-cargue",
       "informe-cargues",
-      "ejecucion",
+      "Ejecucion",
       "digital-global",
       "digital-caribe",
       "digital-efigas",
@@ -156,29 +155,29 @@ const usuarios: Usuario[] = [
       "comercial-ike",
     ]
   },
-  { 
+  {
     usuario: "jgane",
     nombre: "Julian Gane",
     clave: "cx2026",
-    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx"],
-    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","comercial"],
+    permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx", "Ingesta"],
+    permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","comercial", "ingesta-operaciones"],
     permisosInformes: [
-      "ejecucion-promigas", 
-      "ejecucion-parcial", 
-      "controladas", 
-      "relacionadas", 
-      "caribe", 
-      "guajira", 
-      "efigas", 
-      "surtigas", 
-      "gdo", 
-      "ceo", 
-      "hdi", 
-      "alfa", 
+      "ejecucion-promigas",
+      "ejecucion-parcial",
+      "controladas",
+      "relacionadas",
+      "caribe",
+      "guajira",
+      "efigas",
+      "surtigas",
+      "gdo",
+      "ceo",
+      "hdi",
+      "alfa",
       "revision-ejecucion",
       "revision-cargue",
       "informe-cargues",
-      "ejecucion",
+      "Ejecucion",
       "digital-global",
       "digital-caribe",
       "digital-efigas",
@@ -195,7 +194,7 @@ const usuarios: Usuario[] = [
       "comercial-ike",
     ]
   },
-  { 
+  {
     usuario: "cmunera",
     nombre: "Carolina Munera",
     clave: "promi2026",
@@ -203,7 +202,7 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora"],
     permisosInformes: ["ejecucion-promigas", "ejecucion-parcial", "controladas", "relacionadas", "caribe", "guajira", "efigas", "surtigas", "gdo", "ceo", "hdi", "alfa"]
   },
-  { 
+  {
     usuario: "caribe",
     nombre: "Gases del Caribe S.A.",
     clave: "2025",
@@ -211,7 +210,7 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-distribuidora", "canal-digital", "ejecucion-comercial-gaseras"],
     permisosInformes: ["caribe", "digital-caribe","comercial-caribe"]
   },
-  { 
+  {
     usuario: "guajira",
     nombre: "Gases de la Guajira S.A.",
     clave: "c914",
@@ -219,7 +218,7 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-distribuidora"],
     permisosInformes: ["guajira"]
   },
-  { 
+  {
     usuario: "efigas",
     nombre: "Efigas Gas Natural S.A.",
     clave: "e741",
@@ -227,7 +226,7 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-distribuidora", "canal-digital", "ejecucion-comercial-gaseras"],
     permisosInformes: ["efigas", "digital-efigas","comercial-efigas"]
   },
-  { 
+  {
     usuario: "surtigas",
     nombre: "SURTIGAS S.A.",
     clave: "s892",
@@ -235,7 +234,7 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-distribuidora", "canal-digital", "ejecucion-comercial-gaseras"],
     permisosInformes: ["surtigas", "digital-surtigas","comercial-surtigas"]
   },
-  { 
+  {
     usuario: "gdo",
     nombre: "Gases de Occidente S.A.",
     clave: "g327",
@@ -243,7 +242,7 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-distribuidora", "canal-digital", "ejecucion-comercial-gaseras"],
     permisosInformes: ["gdo", "digital-gdo", "comercial-gdo"]
   },
-  { 
+  {
     usuario: "ceo",
     nombre: "Compañia Energetica de Occidente S.A.S",
     clave: "c560",
@@ -251,21 +250,21 @@ const usuarios: Usuario[] = [
     permisosGrupo: ["ejecucion-distribuidora", "ejecucion-comercial-gaseras"],
     permisosInformes: ["ceo", "comercial-ceo"]
   },
-  { 
+  {
     usuario: "hdi",
     nombre: "HDI Seguros Colombia S.A.",
     clave: "235",
     permisosSecciones: ["Operaciones", "EjecucionComercial"],
     permisosGrupo: ["ejecucion-aseguradora", "ejecucion-comercial-aseguradora"],
-    permisosInformes: ["hdi", "comercial-hdi"] 
+    permisosInformes: ["hdi", "comercial-hdi"]
   },
-  { 
+  {
     usuario: "alfa",
     nombre: "Seguros Alfa S.A.",
     clave: "674",
     permisosSecciones: ["Operaciones", "EjecucionComercial"],
     permisosGrupo: ["ejecucion-aseguradora", "ejecucion-comercial-aseguradora"],
-    permisosInformes: ["alfa", "comercial-alfa"] 
+    permisosInformes: ["alfa", "comercial-alfa"]
   },
 ];
 
