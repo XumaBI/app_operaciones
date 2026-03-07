@@ -10,7 +10,8 @@ export function useFetchData<T>(endpoint: string) {
     const fetchData = async () => {
       try {
         const res = await apiClient.get(endpoint);
-        setData(res.data);
+        const raw = res.data;
+        setData(Array.isArray(raw) ? raw : []);
       } catch (err) {
         setError("Error al cargar los datos");
       } finally {
