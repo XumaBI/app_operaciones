@@ -5,7 +5,7 @@ const usuarios: Usuario[] = [
   {
     usuario: "admin",
     nombre: "Administrador",
-    clave: "Xuma2025",
+    clave: "Xuma2026*",
     permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial", "cx", "Ingesta"],
     permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial", "canal-digital", "ejecucion-comercial-gaseras", "ejecucion-comercial-aseguradora", "pqrs", "ingesta-operaciones"],
     permisosInformes: [
@@ -22,6 +22,8 @@ const usuarios: Usuario[] = [
       "ceo",
       "hdi",
       "alfa",
+      "ike",
+      "gnp",
       "revision-ejecucion",
       "revision-cargue",
       "informe-cargues",
@@ -51,7 +53,15 @@ const usuarios: Usuario[] = [
   clave: "102217",
   permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
   permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
-  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues"]
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+  },
+  {
+  usuario: "bgonzalez",
+  nombre: "Brian Gonzalez",
+  clave: "Francia2026",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
   },
   {
   usuario: "kmendez",
@@ -95,6 +105,8 @@ const usuarios: Usuario[] = [
       "ceo",
       "hdi",
       "alfa",
+      "ike",
+      "gnp",
       "revision-ejecucion",
       "revision-cargue",
       "informe-cargues",
@@ -265,6 +277,22 @@ const usuarios: Usuario[] = [
     permisosSecciones: ["Operaciones", "EjecucionComercial"],
     permisosGrupo: ["ejecucion-aseguradora", "ejecucion-comercial-aseguradora"],
     permisosInformes: ["alfa", "comercial-alfa"]
+  },
+  {
+    usuario: "gnp",
+    nombre: "Grupo Nacional Provincial",
+    clave: "428",
+    permisosSecciones: ["Operaciones"],
+    permisosGrupo: ["ejecucion-aseguradora"],
+    permisosInformes: ["gnp"]
+  },
+  {
+    usuario: "ike",
+    nombre: "IKE Asistencias",
+    clave: "359",
+    permisosSecciones: ["Operaciones"],
+    permisosGrupo: ["ejecucion-aseguradora"],
+    permisosInformes: ["ike"]
   },
 ];
 

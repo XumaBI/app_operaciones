@@ -26,6 +26,8 @@ const informes: Record<string, string> = {
   // Ejecucion Aseguradoras
   "hdi": "https://app.powerbi.com/view?r=eyJrIjoiZTFjODIyY2MtNTA3ZC00ZWNlLWJlNmYtMWVjMDkyMmU2ZDIzIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
   "alfa": "https://app.powerbi.com/view?r=eyJrIjoiNjg4ZTQ4ZTktODljMS00ODg5LWE5MmQtNGJlOWMwNDRiYTczIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
+  "ike": "https://app.powerbi.com/view?r=eyJrIjoiYTNjYzI1MTMtMWMwMy00ZDNlLTg4OWMtNjU2MDA4ZTJjMTlhIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
+  "gnp": "https://app.powerbi.com/view?r=eyJrIjoiMzNhNmFmZTItYjQxMi00YWJmLTgwMmUtZTY2MzhiZjVhMmU5IiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",
 
   // Revisión
   "revision-ejecucion": "https://app.powerbi.com/view?r=eyJrIjoiNGQ1MzcxMDYtMDg5ZC00ZGNhLTg5ZDAtYzJjZjhiNTg5YzVlIiwidCI6ImEzNmEzYmJkLTY5ZGQtNDgzNS04NTIyLTRiOTQ0MmM5YTE3NCIsImMiOjR9",

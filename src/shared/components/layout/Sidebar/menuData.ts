@@ -58,6 +58,8 @@ export const MENU_DATA: Seccion[] = [
         informes: [
           { name: "HDI", path: "hdi", type: "informe" },
           { name: "ALFA", path: "alfa", type: "informe" },
+          { name: "IKE", path: "ike", type: "informe" },
+          { name: "GNP", path: "gnp", type: "informe" },
         ],
       },
       {
