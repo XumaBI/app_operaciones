@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import apiClient from "../../../api/apiClient";
 import { useFetchData } from "../../../shared/hooks/useFetchData";
@@ -30,6 +30,18 @@ interface Distribuidora {
   cod: string;
 }
 
+interface Aseguradora {
+  id: number;
+  nombre: string;
+  cod: string;
+}
+
+interface ArchivoEnBucket {
+  filename: string;
+  size: number;
+  lastModified: string;
+}
+
 interface DocTipo {
   label: string;
   slug: string;
@@ -42,6 +54,8 @@ interface DocState {
   estado: EstadoDoc;
   progreso: number;
   mensaje: string;
+  tamano?: number;
+  subidoEn?: string;
 }
 
 // ── Config: tipos de documento por distribuidora (cod) ─────────────────────────
@@ -133,17 +147,33 @@ function crearEstadoInicial(docs: DocTipo[]): Record<string, DocState> {
   );
 }
 
+function formatearFechaCorta(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yy} ${hh}:${min}`;
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function Ejecucion() {
   const { data: distribuidoras, loading: loadingDist } =
     useFetchData<Distribuidora>("/distribuidora/");
+  const { data: aseguradoras, loading: loadingAseg } =
+    useFetchData<Aseguradora>("/aseguradora/");
 
   const [distribuidoraObj, setDistribuidoraObj] =
     useState<Distribuidora | null>(null);
+  const [aseguradoraObj, setAseguradoraObj] =
+    useState<Aseguradora | null>(null);
   const [anioMes, setAnioMes] = useState<string>("");
   const [docEstados, setDocEstados] = useState<Record<string, DocState>>({});
   const [draggingSlug, setDraggingSlug] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [cargandoListado, setCargandoListado] = useState(false);
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -152,7 +182,7 @@ export default function Ejecucion() {
 
   const archivosListos = docsTipos.filter(
     (d) =>
-      docEstados[d.slug]?.archivo !== null &&
+      !!docEstados[d.slug]?.archivo &&
       docEstados[d.slug]?.estado !== "exito"
   );
 
@@ -165,11 +195,19 @@ export default function Ejecucion() {
   );
 
   const hayArchivosParaEnviar =
-    archivosListos.length > 0 && !!anioMes && !enviando;
+    archivosListos.length > 0 &&
+    !!anioMes &&
+    !!aseguradoraObj &&
+    !enviando;
 
   const opcionesDistribuidora = distribuidoras.map((d) => ({
     label: d.nombre,
     value: d.nombre,
+  }));
+
+  const opcionesAseguradora = aseguradoras.map((a) => ({
+    label: a.nombre,
+    value: a.nombre,
   }));
 
   // ── Handlers ──────────────────────────────────────────────────────────────────
@@ -183,12 +221,69 @@ export default function Ejecucion() {
   const handleSeleccionarDistribuidora = (nombre: string) => {
     const dist = distribuidoras.find((d) => d.nombre === nombre) ?? null;
     setDistribuidoraObj(dist);
-    if (dist) {
-      setDocEstados(crearEstadoInicial(getDocsTipo(dist.cod)));
-    } else {
-      setDocEstados({});
-    }
   };
+
+  const handleSeleccionarAseguradora = (nombre: string) => {
+    const aseg = aseguradoras.find((a) => a.nombre === nombre) ?? null;
+    setAseguradoraObj(aseg);
+  };
+
+  // Cuando cambia el contexto (distribuidora, aseguradora o período):
+  // - Resetea las tarjetas a estado inicial
+  // - Si los tres están seleccionados, consulta los archivos ya subidos al bucket
+  //   y marca como "exito" los slugs que ya existen
+  useEffect(() => {
+    if (!distribuidoraObj) {
+      setDocEstados({});
+      return;
+    }
+
+    const docs = getDocsTipo(distribuidoraObj.cod);
+    setDocEstados(crearEstadoInicial(docs));
+
+    if (!aseguradoraObj || !anioMes) return;
+
+    const controller = new AbortController();
+    setCargandoListado(true);
+
+    const folder = `cierres/${distribuidoraObj.cod}/${aseguradoraObj.cod}/${anioMes}`;
+
+    apiClient
+      .get<ArchivoEnBucket[]>("/archivos/list", {
+        params: { folder },
+        signal: controller.signal,
+      })
+      .then((res) => {
+        const archivos = Array.isArray(res.data) ? res.data : [];
+        setDocEstados((prev) => {
+          const next = { ...prev };
+          for (const doc of docs) {
+            const match = archivos.find((f) =>
+              f.filename.startsWith(`${doc.slug}-`)
+            );
+            if (match) {
+              next[doc.slug] = {
+                archivo: null,
+                estado: "exito",
+                progreso: 100,
+                mensaje: "",
+                tamano: match.size,
+                subidoEn: match.lastModified,
+              };
+            }
+          }
+          return next;
+        });
+      })
+      .catch((err) => {
+        if (err?.name === "CanceledError" || err?.code === "ERR_CANCELED")
+          return;
+        // Falla silenciosa: si no podemos consultar, el usuario igual puede subir.
+      })
+      .finally(() => setCargandoListado(false));
+
+    return () => controller.abort();
+  }, [distribuidoraObj, aseguradoraObj, anioMes]);
 
   const handleFileSelect = (slug: string, file: File) => {
     actualizarDoc(slug, { archivo: file, estado: "idle", progreso: 0, mensaje: "" });
@@ -199,12 +294,12 @@ export default function Ejecucion() {
   };
 
   const handleEnviarTodos = async () => {
-    if (!distribuidoraObj || !anioMes) return;
+    if (!distribuidoraObj || !aseguradoraObj || !anioMes) return;
     setConfirmOpen(false);
 
     const paraEnviar = docsTipos.filter(
       (d) =>
-        docEstados[d.slug]?.archivo !== null &&
+        !!docEstados[d.slug]?.archivo &&
         docEstados[d.slug]?.estado !== "exito"
     );
 
@@ -212,7 +307,7 @@ export default function Ejecucion() {
       paraEnviar.map(async (doc) => {
         const archivoOriginal = docEstados[doc.slug].archivo!;
         const archivo = await convertirACsv(archivoOriginal);
-        const nombreFinal = `${doc.slug}-${distribuidoraObj.cod}-${anioMes}.${getExtension(archivo.name)}`;
+        const nombreFinal = `${doc.slug}-${distribuidoraObj.cod}-${aseguradoraObj.cod}-${anioMes}.${getExtension(archivo.name)}`;
         const archivoRenombrado = new File([archivo], nombreFinal, {
           type: archivo.type,
         });
@@ -220,7 +315,7 @@ export default function Ejecucion() {
         formData.append("file", archivoRenombrado);
         formData.append(
           "folder",
-          `cierres/${distribuidoraObj.cod}/${anioMes}`
+          `cierres/${distribuidoraObj.cod}/${aseguradoraObj.cod}/${anioMes}`
         );
 
         actualizarDoc(doc.slug, { estado: "subiendo", progreso: 0 });
@@ -235,7 +330,12 @@ export default function Ejecucion() {
                 });
             },
           });
-          actualizarDoc(doc.slug, { estado: "exito", progreso: 100 });
+          actualizarDoc(doc.slug, {
+            estado: "exito",
+            progreso: 100,
+            tamano: archivo.size,
+            subidoEn: new Date().toISOString(),
+          });
         } catch {
           actualizarDoc(doc.slug, {
             estado: "error",
@@ -257,12 +357,12 @@ export default function Ejecucion() {
         variant="body2"
         sx={{ color: "rgba(255,255,255,0.45)", mb: 4 }}
       >
-        Selecciona la distribuidora y el período para ver los documentos
-        requeridos.
+        Selecciona la distribuidora, la aseguradora y el período para ver los
+        documentos requeridos.
       </Typography>
 
       {/* Selectors */}
-      <Box display="flex" gap={2} mb={4} sx={{ maxWidth: 480 }}>
+      <Box display="flex" gap={2} mb={4} sx={{ maxWidth: 720 }}>
         <Box flex={1}>
           <Selector
             label="Distribuidora"
@@ -270,6 +370,15 @@ export default function Ejecucion() {
             value={distribuidoraObj?.nombre ?? ""}
             onChange={handleSeleccionarDistribuidora}
             disabled={loadingDist || enviando}
+          />
+        </Box>
+        <Box flex={1}>
+          <Selector
+            label="Aseguradora"
+            options={opcionesAseguradora}
+            value={aseguradoraObj?.nombre ?? ""}
+            onChange={handleSeleccionarAseguradora}
+            disabled={loadingAseg || enviando}
           />
         </Box>
         <Box flex={1}>
@@ -301,8 +410,24 @@ export default function Ejecucion() {
               <span style={{ color: "rgba(255,255,255,0.75)" }}>
                 {distribuidoraObj.nombre}
               </span>
+              {aseguradoraObj && (
+                <>
+                  {" · "}
+                  <span style={{ color: "rgba(255,255,255,0.75)" }}>
+                    {aseguradoraObj.nombre}
+                  </span>
+                </>
+              )}
             </Typography>
-            <Box display="flex" gap={1}>
+            <Box display="flex" gap={1} alignItems="center">
+              {cargandoListado && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "rgba(255,255,255,0.35)", fontSize: "11px" }}
+                >
+                  Consultando…
+                </Typography>
+              )}
               {archivosExitosos.length > 0 && (
                 <Chip
                   label={`${archivosExitosos.length} enviado${archivosExitosos.length > 1 ? "s" : ""}`}
@@ -467,8 +592,30 @@ export default function Ejecucion() {
                           variant="caption"
                           sx={{ color: "#5AE280", fontWeight: 600 }}
                         >
-                          Enviado
+                          {est.subidoEn && !est.archivo ? "Ya en bucket" : "Enviado"}
                         </Typography>
+                        {est.tamano !== undefined && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "rgba(255,255,255,0.4)",
+                              fontSize: "10px",
+                            }}
+                          >
+                            {formatearPeso(est.tamano)}
+                          </Typography>
+                        )}
+                        {est.subidoEn && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "rgba(255,255,255,0.25)",
+                              fontSize: "10px",
+                            }}
+                          >
+                            {formatearFechaCorta(est.subidoEn)}
+                          </Typography>
+                        )}
                       </>
                     ) : est.estado === "subiendo" ? (
                       <>
@@ -661,6 +808,8 @@ export default function Ejecucion() {
             >
               {enviando
                 ? "Enviando archivos…"
+                : !aseguradoraObj
+                ? "Selecciona la aseguradora para habilitar el envío."
                 : !anioMes
                 ? "Selecciona el período para habilitar el envío."
                 : archivosListos.length === 0
@@ -723,13 +872,18 @@ export default function Ejecucion() {
             <strong style={{ color: "rgba(255,255,255,0.85)" }}>
               {distribuidoraObj?.nombre}
             </strong>{" "}
+            ·{" "}
+            <strong style={{ color: "rgba(255,255,255,0.85)" }}>
+              {aseguradoraObj?.nombre}
+            </strong>{" "}
             · {anioMes}:
           </DialogContentText>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {archivosListos.map((doc) => {
-              const archivo = docEstados[doc.slug].archivo!;
-              const nombreFinal = `${doc.slug}-${distribuidoraObj?.cod}-${anioMes}.${getExtension(archivo.name)}`;
+              const archivo = docEstados[doc.slug]?.archivo;
+              if (!archivo) return null;
+              const nombreFinal = `${doc.slug}-${distribuidoraObj?.cod}-${aseguradoraObj?.cod}-${anioMes}.${getExtension(archivo.name)}`;
               return (
                 <Box
                   key={doc.slug}
