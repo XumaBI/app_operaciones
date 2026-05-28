@@ -279,7 +279,7 @@ const usuarios: Usuario[] = [
   {
     usuario: "caribe",
     nombre: "Gases del Caribe S.A.",
-    clave: "2025",
+    clave: "c914",
     permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
     permisosGrupo: ["ejecucion-distribuidora", "canal-digital", "ejecucion-comercial-gaseras"],
     permisosInformes: ["caribe", "digital-caribe","comercial-caribe"]
@@ -287,7 +287,7 @@ const usuarios: Usuario[] = [
   {
     usuario: "guajira",
     nombre: "Gases de la Guajira S.A.",
-    clave: "c914",
+    clave: "g236",
     permisosSecciones: ["Operaciones"],
     permisosGrupo: ["ejecucion-distribuidora"],
     permisosInformes: ["guajira"]
