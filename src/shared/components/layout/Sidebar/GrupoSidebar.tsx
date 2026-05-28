@@ -5,20 +5,10 @@ type GroupProps = {
   title: string;
   iconPath: string;
   informes: { name: string; path: string; type?: "informe" | "componente" }[];
-  permisosInformes: string[];
 };
 
-export function GroupSidebar({
-  title,
-  iconPath,
-  informes,
-  permisosInformes,
-}: GroupProps) {
+export function GroupSidebar({ title, iconPath, informes }: GroupProps) {
   const [open, setOpen] = useState(false);
-
-  const informesFiltrados = informes.filter((i) =>
-    permisosInformes.includes(i.path)
-  );
 
   return (
     <div className="group">
@@ -42,8 +32,8 @@ export function GroupSidebar({
           transition: "max-height 0.3s ease-in-out",
         }}
       >
-        {informesFiltrados.map((i) => (
-          <ItemSidebar path={i.path} title={i.name} type={i.type} />
+        {informes.map((i) => (
+          <ItemSidebar key={i.path} path={i.path} title={i.name} type={i.type} />
         ))}
       </div>
     </div>
