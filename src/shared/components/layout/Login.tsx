@@ -64,6 +64,68 @@ const usuarios: Usuario[] = [
   permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
   },
   {
+  usuario: "jrivero",
+  nombre: "Julio Rivero",
+  clave: "Xuma2026*JR",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+
+{
+  usuario: "wortiz",
+  nombre: "Wendy Ortiz",
+  clave: "Xuma2026*WO",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+
+{
+  usuario: "frada",
+  nombre: "Fabian Rada",
+  clave: "Xuma2026*FR",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+
+{
+  usuario: "spaniagua",
+  nombre: "Stephanie Paniagua",
+  clave: "Xuma2026*SP",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+
+{
+  usuario: "caltahona",
+  nombre: "Carlos Altahona",
+  clave: "Xuma2026*CA",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+
+{
+  usuario: "jthomas",
+  nombre: "Johan Thomas",
+  clave: "Xuma2026*JT",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+
+{
+  usuario: "lgoethe",
+  nombre: "Luis Goethe",
+  clave: "Xuma2026*LG",
+  permisosSecciones: ["Operaciones", "IntelicenciaCanales", "EjecucionComercial"],
+  permisosGrupo: ["ejecucion-global","ejecucion-distribuidora","ejecucion-aseguradora","revision","comercial"],
+  permisosInformes: ["ejecucion-promigas","revision-ejecucion","revision-cargue","informe-cargues","ike","gnp"]
+},
+  {
   usuario: "kmendez",
   nombre: "Karol Mendez",
   clave: "mendez2026",
