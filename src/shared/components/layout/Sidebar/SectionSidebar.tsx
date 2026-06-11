@@ -12,22 +12,10 @@ type SectionProps = {
   title: string;
   iconPath: string;
   grupos: Group[];
-  permisosGrupo: string[];
-  permisosInformes: string[];
 };
 
-export function SectionSidebar({
-  title,
-  iconPath,
-  grupos,
-  permisosGrupo,
-  permisosInformes,
-}: SectionProps) {
+export function SectionSidebar({ title, iconPath, grupos }: SectionProps) {
   const [open, setOpen] = useState(false);
-
-  const gruposFiltrados = grupos.filter((g) =>
-    permisosGrupo.includes(g.path)
-  );
 
   return (
     <div className="section">
@@ -51,13 +39,12 @@ export function SectionSidebar({
           transition: "max-height 0.3s ease-in-out",
         }}
       >
-        {gruposFiltrados.map((g) => (
+        {grupos.map((g) => (
           <GroupSidebar
             key={g.name}
             title={g.name}
             iconPath={g.iconPath}
             informes={g.informes}
-            permisosInformes={permisosInformes}
           />
         ))}
       </div>

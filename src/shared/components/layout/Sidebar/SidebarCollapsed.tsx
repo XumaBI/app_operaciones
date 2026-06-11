@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import "../../../../styles/sidebar.css";
-import { MENU_DATA, Seccion } from "./menuData";
+import { filtrarMenuPorPermisos, Seccion } from "./menuData";
 import { GroupSidebar } from "./GrupoSidebar";
 
 type SidebarCollapsedProps = {
-  permisosSecciones: string[];
-  permisosGrupo?: string[];
   permisosInformes: string[];
   onExpandir: () => void;
 };
 
 export function SidebarCollapsed({
-  permisosSecciones,
   permisosInformes = [],
   onExpandir,
 }: SidebarCollapsedProps) {
@@ -26,9 +23,7 @@ export function SidebarCollapsed({
   const [isHoverBoxActive, setIsHoverBoxActive] = useState(false);
   const [leaveTimeout, setLeaveTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
-  const seccionesFiltradas = MENU_DATA.filter((s) =>
-    permisosSecciones.includes(s.path.replace("/", ""))
-  );
+  const seccionesFiltradas = filtrarMenuPorPermisos(permisosInformes);
 
   const handleMouseEnter = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -100,7 +95,6 @@ export function SidebarCollapsed({
                 title={g.name}
                 iconPath={g.iconPath}
                 informes={g.informes}
-                permisosInformes={permisosInformes}
               />
             ))}
           </div>

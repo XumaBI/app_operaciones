@@ -170,3 +170,20 @@ export const MENU_DATA: Seccion[] = [
   },
 ];
 
+// Poda el menú según los permisos de hoja del usuario: un grupo solo aparece si
+// tiene al menos una hoja permitida, y una sección solo si tiene al menos un grupo
+// visible. La jerarquía vive aquí (front); la BD solo guarda los permisos de hoja.
+export function filtrarMenuPorPermisos(permisosInformes: string[]): Seccion[] {
+  const permitidos = new Set(permisosInformes);
+
+  return MENU_DATA.map((seccion) => ({
+    ...seccion,
+    grupos: seccion.grupos
+      .map((grupo) => ({
+        ...grupo,
+        informes: grupo.informes.filter((i) => permitidos.has(i.path)),
+      }))
+      .filter((grupo) => grupo.informes.length > 0),
+  })).filter((seccion) => seccion.grupos.length > 0);
+}
+
