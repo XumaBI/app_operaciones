@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { Sidebar } from "./shared/components/layout/Sidebar/Sidebar";
 import Login from "./shared/components/layout/Login";
 import Home from "./shared/components/layout/Home";
@@ -14,6 +14,12 @@ import "./styles/App.css";
 export function App() {
   const { usuario, cargando, logout } = useAuth();
   const [isClosed, setIsClosed] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/", { replace: true });
+  };
 
   if (cargando) {
     return (
@@ -34,7 +40,7 @@ export function App() {
           <Header
             userName={usuario.usuario}
             nombre={usuario.nombre}
-            onLogout={logout}
+            onLogout={handleLogout}
             isClosed={isClosed}
             onToggleSidebar={() => setIsClosed(!isClosed)}
           />

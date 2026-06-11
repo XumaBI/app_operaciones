@@ -11,6 +11,7 @@ export type Usuario = {
   nombre: string;
   usuario: string;
   permisosInformes: string[];
+  informes: Record<string, string>; // codigo -> url, solo los permitidos
 };
 
 type LoginResponse = {
