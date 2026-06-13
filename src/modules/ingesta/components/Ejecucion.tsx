@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import apiClient from "../../../api/apiClient";
 import { useFetchData } from "../../../shared/hooks/useFetchData";
+import { useCierre } from "../hooks/useCierre";
+import type { EstadoCierre } from "../hooks/useCierre";
 import Selector from "../../../shared/components/ui/Selector";
 
 import Box from "@mui/material/Box";
@@ -15,6 +17,9 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Chip from "@mui/material/Chip";
 
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import SendIcon from "@mui/icons-material/Send";
@@ -22,6 +27,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Distribuidora {
@@ -158,6 +165,19 @@ function formatearFechaCorta(iso: string): string {
   return `${dd}/${mm}/${yy} ${hh}:${min}`;
 }
 
+// Presentación (texto + color) para cada estado del cierre.
+const CIERRE_DISPLAY: Record<
+  Exclude<EstadoCierre, "idle">,
+  { texto: string; color: string }
+> = {
+  lanzando: { texto: "Lanzando cierre…", color: "#5AB0E2" },
+  queued: { texto: "En cola…", color: "#5AB0E2" },
+  running: { texto: "Ejecutando cierre…", color: "#f59e0b" },
+  success: { texto: "Cierre completado", color: "#5AE280" },
+  failed: { texto: "El cierre falló", color: "#ef4444" },
+  error: { texto: "Error de conexión", color: "#ef4444" },
+};
+
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function Ejecucion() {
   const { data: distribuidoras, loading: loadingDist } =
@@ -174,6 +194,15 @@ export default function Ejecucion() {
   const [draggingSlug, setDraggingSlug] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cargandoListado, setCargandoListado] = useState(false);
+  const [confirmCierreOpen, setConfirmCierreOpen] = useState(false);
+
+  const {
+    estado: estadoCierre,
+    enProceso: cierreEnProceso,
+    error: errorCierre,
+    ejecutar: ejecutarCierre,
+    reset: resetCierre,
+  } = useCierre();
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -199,6 +228,17 @@ export default function Ejecucion() {
     !!anioMes &&
     !!aseguradoraObj &&
     !enviando;
+
+  // El cierre solo se habilita cuando TODOS los documentos requeridos ya están
+  // en el bucket (estado "exito") y el contexto está completo.
+  const todosCompletos =
+    docsTipos.length > 0 &&
+    archivosExitosos.length === docsTipos.length &&
+    !!aseguradoraObj &&
+    !!anioMes;
+
+  const puedeEjecutarCierre =
+    todosCompletos && !enviando && !cierreEnProceso && estadoCierre !== "success";
 
   const opcionesDistribuidora = distribuidoras.map((d) => ({
     label: d.nombre,
@@ -233,6 +273,9 @@ export default function Ejecucion() {
   // - Si los tres están seleccionados, consulta los archivos ya subidos al bucket
   //   y marca como "exito" los slugs que ya existen
   useEffect(() => {
+    // Cualquier cambio de contexto invalida un cierre anterior.
+    resetCierre();
+
     if (!distribuidoraObj) {
       setDocEstados({});
       return;
@@ -283,7 +326,7 @@ export default function Ejecucion() {
       .finally(() => setCargandoListado(false));
 
     return () => controller.abort();
-  }, [distribuidoraObj, aseguradoraObj, anioMes]);
+  }, [distribuidoraObj, aseguradoraObj, anioMes, resetCierre]);
 
   const handleFileSelect = (slug: string, file: File) => {
     actualizarDoc(slug, { archivo: file, estado: "idle", progreso: 0, mensaje: "" });
@@ -344,6 +387,16 @@ export default function Ejecucion() {
         }
       })
     );
+  };
+
+  const handleEjecutarCierre = () => {
+    if (!distribuidoraObj || !aseguradoraObj || !anioMes) return;
+    setConfirmCierreOpen(false);
+    ejecutarCierre({
+      distribuidora: distribuidoraObj.cod,
+      aseguradora: aseguradoraObj.cod,
+      periodo: anioMes,
+    });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -838,6 +891,114 @@ export default function Ejecucion() {
                 : "Enviar archivos"}
             </Button>
           </Box>
+
+          {/* ── Cierre ──────────────────────────────────────────────────── */}
+          <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.06)" }} />
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+              flexWrap: "wrap",
+              p: "16px 18px",
+              borderRadius: 2,
+              border: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(255,255,255,0.02)",
+            }}
+          >
+            <Box>
+              <Typography
+                variant="body2"
+                sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}
+              >
+                Ejecutar cierre
+              </Typography>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={0.7}
+                mt={0.5}
+                sx={{ minHeight: 20 }}
+              >
+                {estadoCierre !== "idle" ? (
+                  <>
+                    {cierreEnProceso ? (
+                      <CircularProgress
+                        size={13}
+                        sx={{ color: CIERRE_DISPLAY[estadoCierre].color }}
+                      />
+                    ) : estadoCierre === "success" ? (
+                      <CheckCircleOutlineIcon
+                        sx={{ fontSize: 15, color: CIERRE_DISPLAY[estadoCierre].color }}
+                      />
+                    ) : (
+                      <ErrorOutlineIcon
+                        sx={{ fontSize: 15, color: CIERRE_DISPLAY[estadoCierre].color }}
+                      />
+                    )}
+                    <Typography
+                      variant="caption"
+                      sx={{ color: CIERRE_DISPLAY[estadoCierre].color, fontWeight: 600 }}
+                    >
+                      {errorCierre ?? CIERRE_DISPLAY[estadoCierre].texto}
+                    </Typography>
+                  </>
+                ) : todosCompletos ? (
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Todos los documentos están en el bucket. Listo para cerrar.
+                  </Typography>
+                ) : (
+                  <Box display="flex" alignItems="center" gap={0.6}>
+                    <LockOutlinedIcon
+                      sx={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.35)" }}
+                    >
+                      Faltan documentos por subir ({archivosExitosos.length}/
+                      {docsTipos.length}).
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+
+            <Button
+              variant="contained"
+              startIcon={
+                cierreEnProceso ? (
+                  <CircularProgress size={16} sx={{ color: "inherit" }} />
+                ) : (
+                  <RocketLaunchIcon />
+                )
+              }
+              disabled={!puedeEjecutarCierre}
+              onClick={() => setConfirmCierreOpen(true)}
+              sx={{
+                backgroundColor: "#00a72f",
+                textTransform: "none",
+                fontWeight: 600,
+                px: 3,
+                "&:hover": { backgroundColor: "#008f27" },
+                "&.Mui-disabled": {
+                  backgroundColor: "rgba(0,167,47,0.15)",
+                  color: "rgba(255,255,255,0.25)",
+                },
+              }}
+            >
+              {cierreEnProceso
+                ? "Ejecutando…"
+                : estadoCierre === "success"
+                ? "Cierre realizado"
+                : "Ejecutar cierre"}
+            </Button>
+          </Box>
         </>
       )}
 
@@ -943,6 +1104,72 @@ export default function Ejecucion() {
             }}
           >
             Sí, enviar todos
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmación de cierre */}
+      <Dialog
+        open={confirmCierreOpen}
+        onClose={() => setConfirmCierreOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: "#151c27",
+              color: "white",
+              borderRadius: 2,
+              minWidth: 440,
+              border: "1px solid rgba(255,255,255,0.07)",
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ display: "flex", alignItems: "center", gap: 1.5, pb: 1 }}
+        >
+          <RocketLaunchIcon sx={{ color: "#00a72f" }} />
+          Ejecutar cierre
+        </DialogTitle>
+
+        <DialogContent>
+          <DialogContentText
+            sx={{ color: "rgba(255,255,255,0.6)", fontSize: "14px" }}
+          >
+            Se lanzará el proceso de cierre en Airflow para —{" "}
+            <strong style={{ color: "rgba(255,255,255,0.85)" }}>
+              {distribuidoraObj?.nombre}
+            </strong>{" "}
+            ·{" "}
+            <strong style={{ color: "rgba(255,255,255,0.85)" }}>
+              {aseguradoraObj?.nombre}
+            </strong>{" "}
+            · {anioMes}. Esta acción procesa los {docsTipos.length} documentos
+            cargados en el bucket.
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={() => setConfirmCierreOpen(false)}
+            sx={{
+              textTransform: "none",
+              color: "rgba(255,255,255,0.5)",
+              "&:hover": { color: "white" },
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleEjecutarCierre}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              backgroundColor: "#00a72f",
+              "&:hover": { backgroundColor: "#008f27" },
+            }}
+          >
+            Sí, ejecutar cierre
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import "../../../styles/Login.css";
+import "../../../styles/Informe.css";
 import { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { SinAcceso } from "./SinAcceso";

@@ -1,0 +1,48 @@
+/* Contenedor del informe: llena todo el alto disponible del .content */
+.iframe {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.iframe iframe {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Botón Expandir / Salir de pantalla completa */
+.fullscreen-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+
+  background: rgb(22, 70, 102);
+  color: #ffffff;
+
+  border: 1px solid rgba(12, 135, 176, 0.25);
+  border-radius: 6px;
+
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.fullscreen-btn:hover {
+  background: rgb(98, 134, 158);
+  box-shadow: 1px 5px 10px 1px rgba(56, 79, 129, 0.562);
+  color: #ffffff;
+}
