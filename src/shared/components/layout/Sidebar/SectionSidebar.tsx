@@ -1,52 +1,85 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GroupSidebar } from "./GrupoSidebar";
+
+type Informe = {
+  name: string;
+  path: string;
+  type?: "informe" | "componente";
+};
 
 type Group = {
   name: string;
   path: string;
   iconPath: string;
-  informes: { name: string; path: string; type?: "informe" | "componente" }[];
+  informes: Informe[];
 };
 
 type SectionProps = {
   title: string;
   iconPath: string;
   grupos: Group[];
+  activeLeaf?: string | null;
+  onNavigate?: () => void;
 };
 
-export function SectionSidebar({ title, iconPath, grupos }: SectionProps) {
-  const [open, setOpen] = useState(false);
+export function SectionSidebar({
+  title,
+  iconPath,
+  grupos,
+  activeLeaf,
+  onNavigate,
+}: SectionProps) {
+  const hasActive = useMemo(
+    () =>
+      grupos.some((g) => g.informes.some((i) => i.path === activeLeaf)),
+    [grupos, activeLeaf]
+  );
+
+  const [open, setOpen] = useState(hasActive);
+
+  // Auto-expande la sección que contiene la ruta activa.
+  useEffect(() => {
+    if (hasActive) setOpen(true);
+  }, [hasActive]);
 
   return (
     <div className="section">
-      <div className="sidebar-header" onClick={() => setOpen(!open)}>
-        <div className="section-icono">
-          <svg viewBox="0 0 24 24">
-            <path d={iconPath}></path>
-          </svg>
-        </div>
-        <div className="section-titulo">{title}</div>
-
-        <div className={`arrow ${open ? "open" : ""}`}>
-        </div>
-      </div>
-
-      <div
-        className={`section-groups ${open ? "open" : "closed"}`}
-        style={{
-          maxHeight: open ? "1000px" : "0",
-          overflow: "hidden",
-          transition: "max-height 0.3s ease-in-out",
-        }}
+      <button
+        type="button"
+        className={`section-header ${hasActive ? "has-active" : ""}`}
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
       >
-        {grupos.map((g) => (
-          <GroupSidebar
-            key={g.name}
-            title={g.name}
-            iconPath={g.iconPath}
-            informes={g.informes}
-          />
-        ))}
+        <span className="section-icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d={iconPath} />
+          </svg>
+        </span>
+        <span className="section-titulo">{title}</span>
+        <svg
+          className={`section-chevron ${open ? "open" : ""}`}
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M7 10l5 5 5-5z" fill="currentColor" />
+        </svg>
+      </button>
+
+      <div className={`collapsible ${open ? "open" : ""}`}>
+        <div className="collapsible-inner">
+          <div className="section-groups">
+            {grupos.map((g) => (
+              <GroupSidebar
+                key={g.name}
+                title={g.name}
+                iconPath={g.iconPath}
+                informes={g.informes}
+                activeLeaf={activeLeaf}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

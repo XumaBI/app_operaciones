@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import apiClient from "../../api/apiClient";
 
-export function useFetchOnDemand<T>(endpoint: string, deps: any[]) {
+export function useFetchOnDemand<T>(endpoint: string, deps: unknown[]) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +23,8 @@ export function useFetchOnDemand<T>(endpoint: string, deps: any[]) {
           signal: controller.signal,
         });
         setData(res.data);
-      } catch (err: any) {
-        if (err.name !== "CanceledError") {
+      } catch (err) {
+        if ((err as { name?: string }).name !== "CanceledError") {
           setError("Error al cargar datos condicionales");
         }
       } finally {
@@ -35,6 +35,8 @@ export function useFetchOnDemand<T>(endpoint: string, deps: any[]) {
     fetchData();
 
     return () => controller.abort();
+    // El hook reacciona a las dependencias que provee el llamador (deps dinámicas).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return { data, loading, error };

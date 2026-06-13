@@ -4,7 +4,14 @@ import axios from "axios";
 import Box from "@mui/material/Box";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { ThemeProvider } from "@mui/material/styles";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import type { Theme } from "@mui/material/styles";
+import { DataGrid } from "@mui/x-data-grid";
+import type {
+  GridColDef,
+  GridRowId,
+  GridValidRowModel,
+  DataGridProps,
+} from "@mui/x-data-grid";
 
 import { darkTheme } from "./theme";
 import CustomToolbar from "./CustomToolbar";
@@ -13,8 +20,8 @@ interface CustomGridProps {
   title?: string;
   columns: GridColDef[];
   apiUrl?: string;
-  data?: any[];
-  onRowsUpdate?: (rows: any[]) => void;
+  data?: GridValidRowModel[];
+  onRowsUpdate?: (rows: GridValidRowModel[]) => void;
 }
 
 export default function Grid({
@@ -24,7 +31,7 @@ export default function Grid({
   data,
   onRowsUpdate,
 }: CustomGridProps) {
-  const [rows, setRows] = useState<any[]>(data || []);
+  const [rows, setRows] = useState<GridValidRowModel[]>(data || []);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,7 +40,7 @@ export default function Grid({
     setLoading(true);
 
     axios
-      .get<any[]>(apiUrl)
+      .get<GridValidRowModel[]>(apiUrl)
       .then((res) => setRows(res.data))
       .catch((err) => console.error("Error al cargar los datos:", err))
       .finally(() => setLoading(false));
@@ -45,7 +52,11 @@ export default function Grid({
     }
   }, [data]);
 
-  const handleCellEditCommit = (params: any) => {
+  const handleCellEditCommit = (params: {
+    id: GridRowId;
+    field: string;
+    value: unknown;
+  }) => {
     const { id, field, value } = params;
 
     setRows((prevRows) => {
@@ -132,7 +143,7 @@ export default function Grid({
   return (
     <ThemeProvider theme={darkTheme}>
       <GlobalStyles
-        styles={(theme: any) => ({
+        styles={(theme: Theme) => ({
           ".MuiDataGrid-panel, .MuiDataGrid-paper, .MuiDataGrid-panelContent, .MuiDataGrid-panelWrapper":
             {
               color: theme.palette.text.primary + " !important",
@@ -178,7 +189,7 @@ export default function Grid({
           </h2>
         )}
 
-        <DataGrid {...(dataGridProps as any)} />
+        <DataGrid {...(dataGridProps as unknown as DataGridProps)} />
       </Box>
     </ThemeProvider>
   );

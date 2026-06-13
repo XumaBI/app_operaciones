@@ -1,16 +1,30 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+
 type ItemProps = {
   title: string;
   path: string;
   type?: "informe" | "componente";
+  onNavigate?: () => void;
 };
 
-export function ItemSidebar({ title, path, type = "informe" }: ItemProps) {
-  const destino = type === "informe" ? `/informe/${path}` : `/componente/${path}`;
+export function ItemSidebar({
+  title,
+  path,
+  type = "informe",
+  onNavigate,
+}: ItemProps) {
+  const destino =
+    type === "informe" ? `/informe/${path}` : `/componente/${path}`;
 
   return (
-    <Link to={destino} className="sidebar-item">
+    <NavLink
+      to={destino}
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        `sidebar-item ${isActive ? "active" : ""}`
+      }
+    >
       {title}
-    </Link>
+    </NavLink>
   );
 }

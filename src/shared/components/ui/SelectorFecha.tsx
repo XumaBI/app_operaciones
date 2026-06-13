@@ -1,12 +1,13 @@
 import * as React from "react";
+import type { Dayjs } from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 interface FechaPickerProps {
   label: string;
-  value: any;
-  onChange: (value: any) => void;
+  value: Dayjs | null;
+  onChange: (value: Dayjs | null) => void;
   format?: string;
   size?: "small" | "medium";
 }

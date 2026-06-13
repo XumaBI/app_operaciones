@@ -1,93 +1,98 @@
-import React, { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../../../../styles/sidebar.css";
-import { filtrarMenuPorPermisos, Seccion } from "./menuData";
+import { filtrarMenuPorPermisos } from "./menuData";
+import type { Seccion } from "./menuData";
 import { GroupSidebar } from "./GrupoSidebar";
 
 type SidebarCollapsedProps = {
   permisosInformes: string[];
   onExpandir: () => void;
+  activeLeaf?: string | null;
 };
+
+type HoverState = { seccion: Seccion; x: number; y: number };
 
 export function SidebarCollapsed({
   permisosInformes = [],
   onExpandir,
+  activeLeaf,
 }: SidebarCollapsedProps) {
-  const [hovered, setHovered] = useState<{
-    seccion: Seccion;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const [hovered, setHovered] = useState<HoverState | null>(null);
+  const hoverActivoRef = useRef(false);
+  const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [isHoverBoxActive, setIsHoverBoxActive] = useState(false);
-  const [leaveTimeout, setLeaveTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const secciones = filtrarMenuPorPermisos(permisosInformes);
 
-  const seccionesFiltradas = filtrarMenuPorPermisos(permisosInformes);
+  const limpiarTimeout = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+  };
+
+  // Limpieza al desmontar.
+  useEffect(() => limpiarTimeout, []);
 
   const handleMouseEnter = (
     e: React.MouseEvent<HTMLDivElement>,
     seccion: Seccion
   ) => {
+    limpiarTimeout();
     const rect = e.currentTarget.getBoundingClientRect();
-    setHovered({
-      seccion,
-      x: rect.right + 8,
-      y: rect.top,
-      width: rect.width,
-      height: rect.height,
-    });
-    if (leaveTimeout) clearTimeout(leaveTimeout);
+    // Altura estimada del flyout para mantenerlo dentro de la pantalla.
+    const altoEstimado = Math.min(
+      window.innerHeight * 0.7,
+      56 + seccion.grupos.length * 40
+    );
+    const y = Math.min(rect.top, window.innerHeight - altoEstimado - 12);
+    setHovered({ seccion, x: rect.right + 8, y: Math.max(8, y) });
   };
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!hovered) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const { clientX, clientY } = e;
-
-    const saliendoPorDerecha =
-      clientX > rect.right && clientY >= rect.top && clientY <= rect.bottom;
-
-    if (saliendoPorDerecha) return;
-
-    const timeout = setTimeout(() => {
-      if (!isHoverBoxActive) setHovered(null);
-    }, 200);
-
-    setLeaveTimeout(timeout);
+  const programarCierre = () => {
+    limpiarTimeout();
+    leaveTimeoutRef.current = setTimeout(() => {
+      if (!hoverActivoRef.current) setHovered(null);
+    }, 180);
   };
 
   return (
-    <div className="sidebar sidebar-collapsed">
+    <aside className="sidebar sidebar-rail">
       <div className="sidebar-content">
-        {seccionesFiltradas.map((s) => (
-          <div
-            key={s.name}
-            className="sidebar-icon"
-            onClick={onExpandir}
-            onMouseEnter={(e) => handleMouseEnter(e, s)}
-            onMouseLeave={handleMouseLeave}
-          >
-            <svg viewBox="0 0 24 24" className="sidebar-icon-svg">
-              <path d={s.iconPath}></path>
-            </svg>
-            <div className="sidebar-icon-label">{s.name}</div>
-          </div>
-        ))}
+        {secciones.map((s) => {
+          const seccionActiva = s.grupos.some((g) =>
+            g.informes.some((i) => i.path === activeLeaf)
+          );
+          return (
+            <div
+              key={s.name}
+              className={`sidebar-icon ${seccionActiva ? "has-active" : ""}`}
+              onClick={onExpandir}
+              onMouseEnter={(e) => handleMouseEnter(e, s)}
+              onMouseLeave={programarCierre}
+            >
+              <svg viewBox="0 0 24 24" className="sidebar-icon-svg" aria-hidden="true">
+                <path d={s.iconPath} />
+              </svg>
+              <span className="sidebar-icon-label">{s.name}</span>
+            </div>
+          );
+        })}
       </div>
 
       {hovered && (
         <div
-          className="hover-box" style={{position: "fixed", left: hovered.x, top: hovered.y,}}
+          className="hover-box"
+          style={{ left: hovered.x, top: hovered.y }}
           onMouseEnter={() => {
-            if (leaveTimeout) clearTimeout(leaveTimeout); setIsHoverBoxActive(true);}}
-          onMouseLeave={() => {setIsHoverBoxActive(false); setHovered(null);}}
+            limpiarTimeout();
+            hoverActivoRef.current = true;
+          }}
+          onMouseLeave={() => {
+            hoverActivoRef.current = false;
+            setHovered(null);
+          }}
         >
-          <div className="hover-box-header">
-            <strong>{hovered.seccion.name}</strong>
-          </div>
-
+          <div className="hover-box-header">{hovered.seccion.name}</div>
           <div className="hover-box-content">
             {hovered.seccion.grupos.map((g) => (
               <GroupSidebar
@@ -95,11 +100,13 @@ export function SidebarCollapsed({
                 title={g.name}
                 iconPath={g.iconPath}
                 informes={g.informes}
+                activeLeaf={activeLeaf}
+                onNavigate={onExpandir}
               />
             ))}
           </div>
         </div>
       )}
-    </div>
+    </aside>
   );
 }

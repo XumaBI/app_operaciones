@@ -1,6 +1,7 @@
 import { TextField } from "@mui/material";
-import {
+import type {
   GridRenderEditCellParams,
+  GridValidRowModel,
 } from "@mui/x-data-grid";
 
 /**
@@ -11,7 +12,7 @@ import {
  * - Alinea el texto a la derecha
  */
 export function NumericEditInput<T extends number | null>(
-  params: GridRenderEditCellParams<any, T>
+  params: GridRenderEditCellParams<GridValidRowModel, T>
 ) {
   const { id, field, api, value } = params;
 

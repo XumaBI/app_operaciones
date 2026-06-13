@@ -40,9 +40,7 @@ export default function CustomToolbar() {
       <StyledQuickFilter>
         <QuickFilterTrigger
           render={(triggerProps, state) => {
-            const { ref, ...rest } = triggerProps as {
-              ref?: React.Ref<HTMLButtonElement>;
-            } & Record<string, any>;
+            const { ref, ...rest } = triggerProps;
 
             return (
               <Tooltip title="Buscar">
@@ -56,7 +54,7 @@ export default function CustomToolbar() {
                   }}
                 >
                   <ToolbarButton
-                    {...(rest as Record<string, any>)}
+                    {...rest}
                     ref={ref as React.Ref<HTMLButtonElement>}
                     color="default"
                     aria-disabled={state.expanded}
@@ -72,7 +70,7 @@ export default function CustomToolbar() {
         <QuickFilterControl
           render={({ ref, ...controlProps }, state) => (
             <StyledTextField
-              {...(controlProps as Record<string, any>)}
+              {...controlProps}
               expanded={state.expanded}
               inputRef={ref as React.Ref<HTMLInputElement>}
               aria-label="Buscar"

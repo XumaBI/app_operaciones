@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import apiClient, {
   getToken,
@@ -6,36 +6,13 @@ import apiClient, {
   clearToken,
   setOnUnauthorized,
 } from "../api/apiClient";
-
-export type Usuario = {
-  nombre: string;
-  usuario: string;
-  permisosInformes: string[];
-  informes: Record<string, string>; // codigo -> url, solo los permitidos
-};
+import { AuthContext } from "./auth-context";
+import type { Usuario } from "./auth-context";
 
 type LoginResponse = {
   access_token: string;
   usuario: Usuario;
 };
-
-type AuthContextType = {
-  usuario: Usuario | null;
-  cargando: boolean;
-  login: (usuario: string, clave: string) => Promise<void>;
-  logout: () => void;
-};
-
-export const AuthContext = createContext<AuthContextType>({
-  usuario: null,
-  cargando: true,
-  login: async () => {},
-  logout: () => {},
-});
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);

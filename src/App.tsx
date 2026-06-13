@@ -1,19 +1,54 @@
-import { useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Suspense, lazy, useEffect, useState } from "react";
+import type { ComponentType } from "react";
+import {
+  Routes,
+  Route,
+  useNavigate,
+  useParams,
+  useLocation,
+} from "react-router-dom";
 import { Sidebar } from "./shared/components/layout/Sidebar/Sidebar";
 import Login from "./shared/components/layout/Login";
 import Home from "./shared/components/layout/Home";
-import Informe from "./modules/informes/components/Informe";
+import NotFound from "./shared/components/layout/NotFound";
 import { Header } from "./shared/components/layout/Header";
-import Ejecucion from "./modules/ingesta/components/Ejecucion";
 
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/auth-context";
 
 import "./styles/App.css";
 
+// Carga diferida de los módulos pesados.
+const Informe = lazy(() => import("./modules/informes/components/Informe"));
+const Ejecucion = lazy(() => import("./modules/ingesta/components/Ejecucion"));
+
+// Registro de componentes navegables (type: "componente" en menuData).
+// Para añadir uno nuevo basta con registrarlo aquí.
+const COMPONENTES: Record<string, ComponentType> = {
+  Ejecucion,
+};
+
+// Resuelve /componente/:id contra el registro; si no existe, muestra 404.
+function ComponenteHost() {
+  const { id } = useParams<{ id: string }>();
+  const Comp = id ? COMPONENTES[id] : undefined;
+  return Comp ? <Comp /> : <NotFound />;
+}
+
+// Lleva el scroll del contenedor de contenido al inicio en cada cambio de ruta.
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.querySelector(".content")?.scrollTo({ top: 0 });
+  }, [pathname]);
+  return null;
+}
+
 export function App() {
   const { usuario, cargando, logout } = useAuth();
-  const [isClosed, setIsClosed] = useState(false);
+  // En móvil el sidebar arranca cerrado (drawer oculto); en escritorio, abierto.
+  const [isClosed, setIsClosed] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= 768
+  );
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -24,9 +59,7 @@ export function App() {
   if (cargando) {
     return (
       <div className="container-app">
-        <p style={{ color: "white", textAlign: "center", marginTop: "2rem" }}>
-          Cargando…
-        </p>
+        <p className="route-loading">Cargando…</p>
       </div>
     );
   }
@@ -42,7 +75,7 @@ export function App() {
             nombre={usuario.nombre}
             onLogout={handleLogout}
             isClosed={isClosed}
-            onToggleSidebar={() => setIsClosed(!isClosed)}
+            onToggleSidebar={() => setIsClosed((v) => !v)}
           />
 
           <div className="body-app">
@@ -50,19 +83,21 @@ export function App() {
               permisosInformes={usuario.permisosInformes}
               isClosed={isClosed}
               onExpandir={() => setIsClosed(false)}
+              onCerrar={() => setIsClosed(true)}
             />
 
             <div className="content">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/informe/:id" element={<Informe />} />
-
-                {/* Módulo de Ingesta */}
-                <Route
-                  path="/componente/Ejecucion"
-                  element={<Ejecucion />}
-                />
-              </Routes>
+              <ScrollToTop />
+              <Suspense
+                fallback={<div className="route-loading">Cargando…</div>}
+              >
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/informe/:id" element={<Informe />} />
+                  <Route path="/componente/:id" element={<ComponenteHost />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </div>
           </div>
         </>

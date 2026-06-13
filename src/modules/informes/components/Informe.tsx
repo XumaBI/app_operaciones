@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../../../styles/Informe.css";
 import { useContext } from "react";
-import { AuthContext } from "../../../context/AuthContext";
+import { AuthContext } from "../../../context/auth-context";
 import { SinAcceso } from "./SinAcceso";
 
 function Informe() {
