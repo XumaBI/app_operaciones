@@ -2,7 +2,7 @@ import "../../../styles/Home.css";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../context/auth-context";
-import { filtrarMenuPorPermisos } from "./Sidebar/menuData";
+import { filtrarDominiosPorPermisos, arbolDesdeApi } from "./Sidebar/menuData";
 
 // ── Contenido editorial (avisos / consejos) ────────────────────────────────────
 const NOVEDADES = [
@@ -70,10 +70,14 @@ export default function Home() {
     return () => clearInterval(t);
   }, []);
 
-  const secciones = useMemo(
-    () => filtrarMenuPorPermisos(usuario?.permisosInformes ?? []),
-    [usuario]
-  );
+  const secciones = useMemo(() => {
+    const dominios = usuario?.menu
+      ? arbolDesdeApi(usuario.menu)
+      : filtrarDominiosPorPermisos(usuario?.permisosInformes ?? []);
+    return dominios
+      .filter((d) => !d.requierePermiso) // excluye dominios admin (Configuración)
+      .flatMap((d) => d.secciones);
+  }, [usuario]);
 
   const informesPlanos = useMemo(
     () =>

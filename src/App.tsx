@@ -1,5 +1,4 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import type { ComponentType } from "react";
 import {
   Routes,
   Route,
@@ -7,25 +6,20 @@ import {
   useParams,
   useLocation,
 } from "react-router-dom";
-import { Sidebar } from "./shared/components/layout/Sidebar/Sidebar";
+import { Navegacion } from "./shared/components/layout/Sidebar/Navegacion";
 import Login from "./shared/components/layout/Login";
 import Home from "./shared/components/layout/Home";
 import NotFound from "./shared/components/layout/NotFound";
 import { Header } from "./shared/components/layout/Header";
+import { COMPONENTES } from "./modules/componentes/registry";
 
 import { useAuth } from "./context/auth-context";
 
 import "./styles/App.css";
 
-// Carga diferida de los módulos pesados.
+// El renderizador de informes (dato puro: nombre + URL embebida). Los componentes
+// navegables viven en el registro compartido (./modules/componentes/registry).
 const Informe = lazy(() => import("./modules/informes/components/Informe"));
-const Ejecucion = lazy(() => import("./modules/ingesta/components/Ejecucion"));
-
-// Registro de componentes navegables (type: "componente" en menuData).
-// Para añadir uno nuevo basta con registrarlo aquí.
-const COMPONENTES: Record<string, ComponentType> = {
-  Ejecucion,
-};
 
 // Resuelve /componente/:id contra el registro; si no existe, muestra 404.
 function ComponenteHost() {
@@ -79,8 +73,9 @@ export function App() {
           />
 
           <div className="body-app">
-            <Sidebar
+            <Navegacion
               permisosInformes={usuario.permisosInformes}
+              menu={usuario.menu}
               isClosed={isClosed}
               onExpandir={() => setIsClosed(false)}
               onCerrar={() => setIsClosed(true)}
