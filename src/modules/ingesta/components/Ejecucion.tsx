@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import * as XLSX from "xlsx";
 import apiClient from "../../../api/apiClient";
 import { useFetchData } from "../../../shared/hooks/useFetchData";
@@ -29,6 +29,9 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import DownloadIcon from "@mui/icons-material/Download";
+import FolderZipIcon from "@mui/icons-material/FolderZip";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Distribuidora {
@@ -165,6 +168,18 @@ function formatearFechaCorta(iso: string): string {
   return `${dd}/${mm}/${yy} ${hh}:${min}`;
 }
 
+// Dispara la descarga de un blob en el navegador con el nombre indicado.
+function dispararDescarga(blob: Blob, nombre: string) {
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(href);
+}
+
 // Presentación (texto + color) para cada estado del cierre.
 const CIERRE_DISPLAY: Record<
   Exclude<EstadoCierre, "idle">,
@@ -195,6 +210,12 @@ export default function Ejecucion() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cargandoListado, setCargandoListado] = useState(false);
   const [confirmCierreOpen, setConfirmCierreOpen] = useState(false);
+
+  // Resultados del cierre (archivos generados por Airflow en …/resultado).
+  const [resultados, setResultados] = useState<ArchivoEnBucket[]>([]);
+  const [cargandoResultados, setCargandoResultados] = useState(false);
+  const [descargando, setDescargando] = useState(false);
+  const [errorDescarga, setErrorDescarga] = useState<string | null>(null);
 
   const {
     estado: estadoCierre,
@@ -327,6 +348,60 @@ export default function Ejecucion() {
 
     return () => controller.abort();
   }, [distribuidoraObj, aseguradoraObj, anioMes, resetCierre]);
+
+  // Carpeta donde Airflow deja los resultados: misma ruta de carga + /resultado.
+  const carpetaResultado =
+    distribuidoraObj && aseguradoraObj && anioMes
+      ? `cierres/${distribuidoraObj.cod}/${aseguradoraObj.cod}/${anioMes}/resultado`
+      : "";
+
+  const cargarResultados = useCallback(() => {
+    if (!carpetaResultado) return;
+    setCargandoResultados(true);
+    setErrorDescarga(null);
+    apiClient
+      .get<ArchivoEnBucket[]>("/archivos/list", {
+        params: { folder: carpetaResultado },
+      })
+      .then((res) => setResultados(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setResultados([]))
+      .finally(() => setCargandoResultados(false));
+  }, [carpetaResultado]);
+
+  // Al completarse el cierre, consulta los archivos de resultado.
+  useEffect(() => {
+    if (estadoCierre === "success") cargarResultados();
+    else setResultados([]);
+  }, [estadoCierre, cargarResultados]);
+
+  const descargarResultados = async () => {
+    if (!carpetaResultado || resultados.length === 0) return;
+    setDescargando(true);
+    setErrorDescarga(null);
+    try {
+      if (resultados.length === 1) {
+        // Un solo archivo: descarga directa con su nombre original.
+        const f = resultados[0];
+        const res = await apiClient.get("/archivos/download", {
+          params: { folder: carpetaResultado, filename: f.filename },
+          responseType: "blob",
+        });
+        dispararDescarga(res.data, f.filename);
+      } else {
+        // Varios archivos: un único .zip para evitar descargas simultáneas.
+        const res = await apiClient.get("/archivos/download-zip", {
+          params: { folder: carpetaResultado },
+          responseType: "blob",
+        });
+        const nombre = `resultado-${distribuidoraObj?.cod}-${aseguradoraObj?.cod}-${anioMes}.zip`;
+        dispararDescarga(res.data, nombre);
+      }
+    } catch {
+      setErrorDescarga("No se pudo descargar. Intenta de nuevo.");
+    } finally {
+      setDescargando(false);
+    }
+  };
 
   const handleFileSelect = (slug: string, file: File) => {
     actualizarDoc(slug, { archivo: file, estado: "idle", progreso: 0, mensaje: "" });
@@ -999,6 +1074,147 @@ export default function Ejecucion() {
                 : "Ejecutar cierre"}
             </Button>
           </Box>
+
+          {/* ── Resultados del cierre ───────────────────────────────────── */}
+          {estadoCierre === "success" && (
+            <Box
+              sx={{
+                mt: 3,
+                p: "18px 20px",
+                borderRadius: 2,
+                border: "1px solid rgba(90,226,128,0.3)",
+                background: "rgba(90,226,128,0.05)",
+              }}
+            >
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                gap={2}
+                flexWrap="wrap"
+                mb={resultados.length > 0 ? 2 : 0}
+              >
+                <Box display="flex" alignItems="center" gap={1.2}>
+                  <CheckCircleOutlineIcon sx={{ color: "#5AE280" }} />
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>
+                      Resultados del cierre
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.45)" }}
+                    >
+                      {cargandoResultados
+                        ? "Buscando archivos de resultado…"
+                        : resultados.length === 0
+                        ? "El cierre terminó; aún no hay archivos de resultado."
+                        : `${resultados.length} archivo${
+                            resultados.length > 1 ? "s" : ""
+                          } disponible${
+                            resultados.length > 1 ? "s" : ""
+                          } para descargar.`}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={cargarResultados}
+                    disabled={cargandoResultados}
+                    sx={{
+                      textTransform: "none",
+                      color: "rgba(255,255,255,0.6)",
+                      "&:hover": { color: "white" },
+                    }}
+                  >
+                    Actualizar
+                  </Button>
+                  {resultados.length > 0 && (
+                    <Button
+                      variant="contained"
+                      startIcon={
+                        descargando ? (
+                          <CircularProgress size={16} sx={{ color: "inherit" }} />
+                        ) : resultados.length > 1 ? (
+                          <FolderZipIcon />
+                        ) : (
+                          <DownloadIcon />
+                        )
+                      }
+                      onClick={descargarResultados}
+                      disabled={descargando}
+                      sx={{
+                        backgroundColor: "#00a72f",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        px: 3,
+                        "&:hover": { backgroundColor: "#008f27" },
+                        "&.Mui-disabled": {
+                          backgroundColor: "rgba(0,167,47,0.15)",
+                          color: "rgba(255,255,255,0.25)",
+                        },
+                      }}
+                    >
+                      {descargando
+                        ? "Preparando…"
+                        : resultados.length > 1
+                        ? `Descargar ${resultados.length} (.zip)`
+                        : "Descargar resultado"}
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+
+              {resultados.length > 0 && (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                  {resultados.map((f) => (
+                    <Box
+                      key={f.filename}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        p: "6px 10px",
+                        borderRadius: 1,
+                        background: "rgba(255,255,255,0.03)",
+                      }}
+                    >
+                      <InsertDriveFileIcon
+                        sx={{ fontSize: 16, color: "rgba(255,255,255,0.45)" }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          flex: 1,
+                          color: "rgba(255,255,255,0.8)",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {f.filename}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "rgba(255,255,255,0.35)" }}
+                      >
+                        {formatearPeso(f.size)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {errorDescarga && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "#ef4444", mt: 1, display: "block" }}
+                >
+                  {errorDescarga}
+                </Typography>
+              )}
+            </Box>
+          )}
         </>
       )}
 

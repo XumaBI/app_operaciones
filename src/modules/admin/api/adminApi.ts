@@ -1,6 +1,7 @@
 import apiClient from "../../../api/apiClient";
 import { MENU_DATA } from "../../../shared/components/layout/Sidebar/menuData";
 import type {
+  ActualizarElemento,
   AdminUsuario,
   DominioJerarquia,
   Elemento,
@@ -25,6 +26,7 @@ import type {
 //   POST   /admin/usuarios/:usuario/clave      {clave} -> 204
 //   GET    /admin/elementos                    -> Elemento[]
 //   POST   /admin/elementos                    NuevoElemento -> Elemento
+//   PATCH  /admin/elementos/:path              ActualizarElemento -> Elemento
 //   PUT    /admin/usuarios/:usuario/permisos   {permisos:string[]} -> AdminUsuario
 //   --- Jerarquía (Fase 2) ---
 //   GET    /admin/jerarquia                     -> DominioJerarquia[]
@@ -213,6 +215,36 @@ export async function crearElemento(input: NuevoElemento): Promise<Elemento> {
   };
   mockElementos = [...mockElementos, nuevo];
   return delay(clonar(nuevo));
+}
+
+export async function actualizarElemento(
+  path: string,
+  datos: ActualizarElemento
+): Promise<Elemento> {
+  if (!USAR_MOCK) {
+    const res = await apiClient.patch<Elemento>(
+      `/admin/elementos/${path}`,
+      datos
+    );
+    return res.data;
+  }
+  const ubic = datos.grupoId != null ? ubicacionDeGrupo(datos.grupoId) : null;
+  if (datos.grupoId != null && !ubic) {
+    throw new Error("El grupo destino no existe.");
+  }
+  let actualizado: Elemento | null = null;
+  mockElementos = mockElementos.map((e) => {
+    if (e.path !== path) return e;
+    actualizado = {
+      ...e,
+      name: datos.name ?? e.name,
+      url: datos.url ?? e.url,
+      ...(ubic ? { seccion: ubic.seccion, grupo: ubic.grupo } : {}),
+    };
+    return actualizado;
+  });
+  if (!actualizado) throw new Error("El elemento no existe.");
+  return delay(clonar(actualizado));
 }
 
 // ── Jerarquía ─────────────────────────────────────────────────────────────────

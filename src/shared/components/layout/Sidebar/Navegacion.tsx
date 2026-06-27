@@ -113,7 +113,10 @@ export function Navegacion({
         activeLeaf={activeLeaf}
         onSelect={(id) => {
           if (mostrarPanel && id === activeId) {
-            onCerrar(); // click sobre el dominio ya activo → cierra el panel
+            // Click sobre el dominio ya activo → cierra el panel y quita el
+            // estado activo (en Home no queda ningún dominio resaltado).
+            onCerrar();
+            setDominioSel(null);
           } else {
             setDominioSel(id);
             onExpandir();

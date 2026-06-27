@@ -3,6 +3,8 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -14,10 +16,12 @@ import CircularProgress from "@mui/material/CircularProgress";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import InsertChartOutlinedIcon from "@mui/icons-material/InsertChartOutlined";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 import {
   listarElementos,
   crearElemento,
+  actualizarElemento,
   listarUsuarios,
   guardarPermisos,
 } from "../api/adminApi";
@@ -30,6 +34,7 @@ export default function ElementosAdmin() {
   const [elementos, setElementos] = useState<Elemento[]>([]);
   const [cargando, setCargando] = useState(true);
   const [dialogo, setDialogo] = useState(false);
+  const [editando, setEditando] = useState<Elemento | null>(null);
 
   const recargar = () => {
     setCargando(true);
@@ -132,6 +137,15 @@ export default function ElementosAdmin() {
                         textTransform: "uppercase",
                       }}
                     />
+                    <Tooltip title="Editar">
+                      <IconButton
+                        size="small"
+                        onClick={() => setEditando(el)}
+                        sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "white" } }}
+                      >
+                        <EditOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 ))}
               </Box>
@@ -153,7 +167,138 @@ export default function ElementosAdmin() {
           }}
         />
       )}
+
+      {editando && (
+        <DialogEditarElemento
+          elemento={editando}
+          onClose={() => setEditando(null)}
+          onGuardado={() => {
+            setEditando(null);
+            recargar();
+          }}
+        />
+      )}
     </Box>
+  );
+}
+
+// ── Diálogo: editar elemento existente ────────────────────────────────────────
+// No se cambian path ni type (el path es el permiso; cambiarlo rompería
+// asignaciones). Se editan nombre, URL (informes) y, opcionalmente, la ubicación.
+function DialogEditarElemento({
+  elemento,
+  onClose,
+  onGuardado,
+}: {
+  elemento: Elemento;
+  onClose: () => void;
+  onGuardado: () => void;
+}) {
+  const [name, setName] = useState(elemento.name);
+  const [url, setUrl] = useState(elemento.url ?? "");
+  const [grupoId, setGrupoId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+
+  const valido = name.trim() && (elemento.type === "componente" || url.trim());
+
+  const guardar = async () => {
+    if (!valido) return;
+    setGuardando(true);
+    setError(null);
+    try {
+      await actualizarElemento(elemento.path, {
+        name: name.trim(),
+        ...(elemento.type === "informe" ? { url: url.trim() } : {}),
+        ...(grupoId !== null ? { grupoId } : {}),
+      });
+      onGuardado();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo actualizar el elemento.");
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <Dialog open onClose={onClose} slotProps={{ paper: { sx: dialogPaperSx } }}>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <EditOutlinedIcon sx={{ color: "#5fd0f0" }} />
+        Editar elemento
+      </DialogTitle>
+      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+            color: "rgba(255,255,255,0.5)",
+            fontSize: "12.5px",
+          }}
+        >
+          <Chip
+            label={elemento.type}
+            size="small"
+            sx={{
+              bgcolor:
+                elemento.type === "informe"
+                  ? "rgba(12,135,176,0.16)"
+                  : "rgba(232,148,58,0.16)",
+              color: elemento.type === "informe" ? "#5fd0f0" : "#e8943a",
+              fontWeight: 600,
+              fontSize: "10px",
+              textTransform: "uppercase",
+            }}
+          />
+          <span>
+            {elemento.path} · actual: {elemento.seccion} / {elemento.grupo}
+          </span>
+        </Box>
+
+        <TextField
+          label="Nombre"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          sx={campoSx}
+          fullWidth
+          autoFocus
+        />
+
+        {elemento.type === "informe" && (
+          <TextField
+            label="URL del informe"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            sx={campoSx}
+            fullWidth
+          />
+        )}
+
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", mt: 1 }}>
+          Mover a otra ubicación (opcional). Si no eliges nada, se mantiene la
+          actual.
+        </Typography>
+        <SelectorUbicacion onChange={setGrupoId} />
+
+        {error && (
+          <Typography variant="caption" sx={{ color: "#ef4444" }}>
+            {error}
+          </Typography>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+        <Button onClick={onClose} sx={botonTexto}>
+          Cancelar
+        </Button>
+        <Button
+          variant="contained"
+          disabled={!valido || guardando}
+          onClick={guardar}
+          sx={botonPrimario}
+        >
+          {guardando ? "Guardando…" : "Guardar cambios"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

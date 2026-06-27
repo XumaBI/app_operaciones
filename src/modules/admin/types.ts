@@ -30,6 +30,15 @@ export type NuevoElemento = {
   grupoId: number; // grupo destino dentro de la jerarquía
 };
 
+// Edición de un elemento existente. El `path` y el `type` no se cambian (el path
+// es el identificador/permiso y romperlo invalidaría asignaciones). `grupoId`
+// solo se envía si se mueve el elemento de ubicación.
+export type ActualizarElemento = {
+  name?: string;
+  url?: string;
+  grupoId?: number;
+};
+
 // ── Jerarquía de navegación (Fase 2) ─────────────────────────────────────────
 // Árbol completo (sin filtrar por permisos) que consume el panel admin para
 // ubicar elementos nuevos. Los ids son numéricos (PK de la BD).
